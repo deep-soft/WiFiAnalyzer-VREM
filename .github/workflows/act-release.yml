@@ -4,10 +4,6 @@ name: act-release
 on:
   workflow_dispatch:
     inputs:
-      compileSdkVersion:
-        description: compileSdkVersion
-        type: boolean
-        default: false
       skip_sign:
         description: skip sign
         type: boolean
