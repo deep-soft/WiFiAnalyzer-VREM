@@ -1,4 +1,4 @@
-# 2024-01-21 13:30
+# 2024-07-07 13:30
 name: act-release
 
 on:
@@ -27,13 +27,15 @@ env:
   #  alias: ${{ secrets.ANDROID_ALIAS }}
   #  keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
   #  keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}  
+  # BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
+  BUILD_TOOLS_VERSION: "34.0.0"
 
 jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: gradle/wrapper-validation-action@v1
+      - uses: gradle/wrapper-validation-action@v3
 
   build:
     runs-on: ubuntu-latest
@@ -90,10 +92,10 @@ jobs:
 # zip source begin
       - name: Create Archive source
 #        if: inputs.create-archive-all == true
-        uses: deep-soft/zip-release@v2
+        uses: deep-soft/zip-release@v3
         with:
           type: 'zip'
-          filename: '${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}-src.zip'
+          filename: '${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}-src'
           directory: '.'
           path: '.'
           exclusions: '*.git* ./*.git/* ./app/schemas/* ./app/schemas/ /*node_modules/* .editorconfig'
@@ -120,14 +122,14 @@ jobs:
 # zip source end
 
       - name: Setup java (v3)
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: gradle
 
       - name: gradle build (v2)
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
 
       - name: gradle  Assemble Release
         run: ./gradlew assembleRelease
@@ -135,10 +137,10 @@ jobs:
 # zip release begin
       - name: Create Archive All
         if: inputs.create-archive-all == true
-        uses: deep-soft/zip-release@v2
+        uses: deep-soft/zip-release@v3
         with:
           type: 'zip'
-          filename: '${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}-all.zip'
+          filename: '${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}-all'
           directory: '.'
           path: '.'
           exclusions: '*.git* ./*.git/* ./app/schemas/* ./app/schemas/ /*node_modules/* .editorconfig'
@@ -153,7 +155,7 @@ jobs:
       - name: Publish Release
         if: inputs.create-archive-all == true
         continue-on-error: true
-        uses: deep-soft/action-gh-release@v1
+        uses: deep-soft/action-gh-release@v2.1
         with:
           draft: true
           tag_name: ${{ env.TAG_NAME }}
@@ -163,7 +165,7 @@ jobs:
 # zip release end
 
       - name: Upload Artifact
-        uses: deep-soft/upload-artifact@v3
+        uses: deep-soft/upload-artifact@v4
         with:
           name: upload-artifact
           path: |
@@ -184,7 +186,7 @@ jobs:
           echo "LIST: " ${{ env.PRG_NAME }}-${{ env.PRG_VERSION }}-release.apk
           ls -l ./signed-apk/
 
-      - uses: deep-soft/sign-android-release@master
+      - uses: deep-soft/sign-android-release@v1
         name: Sign app APK
         if: env.ANDROID_SIGNING_KEY != null
         id: sign-App
@@ -196,18 +198,19 @@ jobs:
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
         env:
           # override default build-tools version (29.0.3) -- optional
-          BUILD_TOOLS_VERSION: "34.0.0"
+          # BUILD_TOOLS_VERSION: "34.0.0"
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
       - name: Upload Artifacts
         if: env.ANDROID_SIGNING_KEY != null
-        uses: deep-soft/upload-artifact@v3
+        uses: deep-soft/upload-artifact@v4
         with:
           name: ${{ env.PRG_NAME }}-${{ env.PRG_VERSION }}-release.apk
           path: ${{steps.sign-App.outputs.signedReleaseFile}}
 
       - name: Publish signed apk package
         if: env.ANDROID_SIGNING_KEY != null
-        uses: deep-soft/action-gh-release@v1
+        uses: deep-soft/action-gh-release@v2.1
         with:
           draft: true
           tag_name: ${{ env.TAG_NAME }}
@@ -217,7 +220,7 @@ jobs:
 
       - name: Publish version build - signed apk package
         if: env.ANDROID_SIGNING_KEY != null
-        uses: deep-soft/action-gh-release@v1
+        uses: deep-soft/action-gh-release@v2.1
         with:
           draft: true
           tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}${{ env.TAG_BUILD }}
@@ -227,7 +230,7 @@ jobs:
 
       - name: Publish unsigned apk package
         if: env.ANDROID_SIGNING_KEY == null
-        uses: deep-soft/action-gh-release@v1
+        uses: deep-soft/action-gh-release@v2.1
         with:
           draft: true
           tag_name: ${{ env.TAG_NAME }}
