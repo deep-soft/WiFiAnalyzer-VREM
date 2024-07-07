@@ -34,8 +34,9 @@ jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: gradle/wrapper-validation-action@v3
+      - uses: actions/checkout@v4
+      #- uses: gradle/wrapper-validation-action@v3
+      - uses: gradle/actions/wrapper-validation@v3
 
   build:
     runs-on: ubuntu-latest
@@ -128,7 +129,7 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: gradle build (v2)
+      - name: gradle build (v3)
         uses: gradle/gradle-build-action@v3
 
       - name: gradle  Assemble Release
