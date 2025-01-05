@@ -1,6 +1,6 @@
 /*
  * WiFiAnalyzer
- * Copyright (C) 2015 - 2024 VREM Software Development <VREMSoftwareDevelopment@gmail.com>
+ * Copyright (C) 2015 - 2025 VREM Software Development <VREMSoftwareDevelopment@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ internal class ChildAtPosition(private val parentMatcher: Matcher<View>, private
         parentMatcher.describeTo(description)
     }
 
-    public override fun matchesSafely(view: View): Boolean {
+    override fun matchesSafely(view: View): Boolean {
         val parent = view.parent
         return (parent is ViewGroup && parentMatcher.matches(parent) && view == parent.getChildAt(position))
     }
